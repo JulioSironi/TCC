@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PER</title>
+</head>
+<body>
+    <h1>
+        <p>Escreva sua mensagem</p>
+    </h1>
+    <form>
+        <textarea name="message"cols="30" rows="10"></textarea>
+        <div>
+            <button type="button" class="buttonSend" onclick="sendData()">Enviar Mensagem</button>
+            <br><br>
+            Agendar Mensagem: <input type="datetime-local" name="messagetime">
+        </div>
+        
+        <br><br><br><br>
+        <input type="reset">
+    </form>
+    <script>
+        function sendData() {
+            var Text = document.getElementById("TextBox").value;
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("GET", "setText?TextContents="+Text, true);
+            xhttp.send(); 
+        }
+    </script>
+</body>
+</html>
