@@ -1,4 +1,5 @@
 const char MAIN_page[] PROGMEM = R"=====(
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -19,6 +20,7 @@ const char MAIN_page[] PROGMEM = R"=====(
         <br><br><br>
         <div> 
             <input type="datetime" id="data">
+            
         </div>
         <br><br><br>
         <div>
@@ -30,7 +32,8 @@ const char MAIN_page[] PROGMEM = R"=====(
     <script>
         function sendData() {
             var senha = document.getElementById("senha").value;
-            if(senha === 'senha'){
+            if(senha === "senha" )
+            {
                 var Text = document.getElementById("recado").value;
                 var xhttp = new XMLHttpRequest();
                 xhttp.open("GET", "setText?TextContents="+Text, true);
@@ -49,6 +52,4 @@ const char MAIN_page[] PROGMEM = R"=====(
     </script>
 </body>
 </html>
-
-
 )=====";
