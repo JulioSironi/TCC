@@ -4,46 +4,61 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
     <title>SER</title>
 </head>
 <body>
-    <h1>
-        <p>Escreva sua mensagem</p>
-    </h1>
-    <form>
-        <textarea name="message"cols="30" rows="10" id="recado"></textarea>
-        <br>
-        <p>Senha:</p>
-        <input type="password" id="senha">
-        <br><br><br>
-        <div> 
-            <input type="datetime" id="data">
+    <div class="login-page">
+        <div class="form">
+            <form id="loginForm" class="login-form">
+                <h4>Login page</h4>
+                <input id="username" type="text" placeholder="username" required />
+                <input id="password" type="password" placeholder="password" required />
+                <button>login</button>
+            </form>
+            <form id="msgForm" class="login-form hidden">
+                <h4>Message page</h4>
+                <textarea id="msg" placeholder="message"></textarea>
+                <input type="datetime" id="date" required>
+                <button>Send</button>
+            </form>
         </div>
-        <br><br><br>
-        <div>
-            <button type="button" class="buttonSend" onclick="sendData()">Enviar Mensagem</button>
-        </div> 
-        <br><br><br><br>
-        <input type="reset">
-    </form>
+    </div>
     <script>
+        const username = "arthur";
+        const password = "tcc";
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (document.getElementById('password').value === password && 
+                document.getElementById('username').value === username) {
+                if (window.confirm('Bem-vindo Arthur')) {
+                    hideLoginForm();
+                } else {
+                    window.location.reload();
+                }
+            } else {
+                alert('Deu ruim');
+            }
+        });
+        document.getElementById('msgForm').addEventListener('submit', function () {
+            e.preventDefault();
+            sendData();
+        });
+        function hideLoginForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('msgForm').classList.remove('hidden');
+        }
         function sendData() {
-            var senha = document.getElementById("senha").value;
-            if(senha === 'senha'){
-                var Text = document.getElementById("recado").value;
-                var xhttp = new XMLHttpRequest();
-                xhttp.open("GET", "setText?TextContents="+Text, true);
-                xhttp.send(); 
-                var data = document.getElementById("data").value
-                var http = new XMLHttpRequest();
-                http.open("GET", "setData?DataContents="+data, true);
-                http.send();
-                alert ("Mensagem enviada!");
-            }
-            else{
-                alert("Senha Incorreta!");
-            }
-            
+            var msg = document.getElementById("msg").value;
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("GET", "setText?TextContents=" + msg, true);
+            xhttp.send();
+            var date = document.getElementById("date").value;
+            var http = new XMLHttpRequest();
+            http.open("GET", "setData?DataContents=" + data, true);
+            http.send();
+            alert("Mensagem enviada!");            
         }
     </script>
 </body>
