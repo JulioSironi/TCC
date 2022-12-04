@@ -56,7 +56,7 @@
             xhttp.send();
             var date = document.getElementById("date").value;
             var http = new XMLHttpRequest();
-            http.open("GET", "setData?DataContents=" + data, true);
+            http.open("GET", "setData?DataContents=" + date, true);
             http.send();
             alert("Mensagem enviada!");            
         }
