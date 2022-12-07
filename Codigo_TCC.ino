@@ -9,7 +9,6 @@
 
 /*-------------- DECLARAÇÃO DE BIBLIOTECAS ----------------*/
 #include <elapsedMillis.h>
-//#include "display.h"
 #include <Bitmap.h>
 #include <DMDESP.h>
 #include <ESP8266WebServer.h>
@@ -48,7 +47,6 @@ NTPClient timeClient(ntpUDP);
 #define DISPLAYS_WIDE 2 //--> Colunas de paineis
 #define DISPLAYS_HIGH 1 //--> Linhas de paineis
 DMDESP Disp(DISPLAYS_WIDE, DISPLAYS_HIGH);
-//display disp(90,16, &Disp);
 
 //-------------------------------------------------------------------------------
 /*-------------- CONFIGURAÇÕES DO SENSOR DE TEMPERATURA ----------------*/
@@ -58,18 +56,20 @@ DHT dht(DHTPIN, DHTTYPE);
 
 //-------------------------------------------------------------------------------
 /*-------------- VÁRIAVEIS PARA O CONTROLE DO PAINEL ----------------*/
-int     temperatura;
-String  hora;
+int     temperature;
+String  hour;
 String  data;
 int     flag = 0;
-long    interval = 20000;
+long    interval = 7000;
 elapsedMillis timeElapsed;
 
 //-------------------------------------------------------------------------------
 /*-------------- VÁRIAVEIS PARA O CONTROLE DA MENSAGEM ----------------*/
 char   *standardText[] = {"COORDENACAO DE ELETRONICA"};
-char   *Text[] = {"Eletronica"};
+char   *Text[100] = {"Eletronica"};
 String  Incoming_Text = "";
+char   *date[20]{""};
+String  Incoming_date = "";
 
 //===============================================================================
 /*-------------- FUNÇÃO PARA INICIAR A PÁGINA HTML ----------------*/
@@ -95,8 +95,33 @@ void Process_Incoming_Text() {
   int str_len = Incoming_Text.length() + 1;
   char char_array[str_len];
   Incoming_Text.toCharArray(char_array, str_len);
+  //Text[0] = {""};
   strcpy(Text[0], char_array);
+  standardText[0] = {"COORDENACAO DE ELETRONICA"};
   Incoming_Text = "";
+}
+
+//===============================================================================
+/*-------------- FUNÇÃO PARA RECEBER A DATA DA PÁGINA HTML ----------------*/
+void handle_Incoming_date() {
+  Incoming_date = server.arg("DataContents");
+  server.send(200, "text/plane", "");
+  Process_Incoming_date();
+}
+
+//===============================================================================
+/*-------------- FUNÇÃO PARA ATRIBUIR A DATA PARA OUTRA VARIAVEL ----------------*/
+void Process_Incoming_date() {
+  delay(500);
+  Serial.println("Incoming date : ");
+  Serial.println(Incoming_date);
+  Serial.println();
+  int str_len = Incoming_date.length() + 1;
+  char char_array[str_len];
+  Incoming_date.toCharArray(char_array, str_len);
+  //date[0] = {""};
+  strcpy(date[0], char_array);
+  Incoming_date = "";
 }
 
 //===============================================================================
@@ -145,18 +170,27 @@ void loop() {
   Disp.loop();                                            //Atualiza o display
   timeClient.update();                                    //Atualiza o servidor NTP
 
-  temperatura = dht.readTemperature();                    //Realiza a leitura da temperatura
-
-  hora = timeClient.getFormattedTime();                   //Realiza a leitura da hora
+  hour = timeClient.getFormattedTime();                   //Realiza a leitura da hora
   
   time_t epochTime = timeClient.getEpochTime();           //
   struct tm *ptm = gmtime ((time_t *)&epochTime);         //
   int currentDay = ptm->tm_mday;                          //Realiza a leitura da data
   int currentMonth = ptm->tm_mon+1;                       //
-  data=String(currentDay) + "/" + String(currentMonth);   //
+  if(currentDay < 10 && currentMonth < 10){
+  data = "0" + String(currentDay) + "/" + "0" + String(currentMonth);
+  }
+  else if(currentDay > 9 && currentMonth < 10){
+    data = String(currentDay) + "/" + "0" + String(currentMonth);
+  }
+  else if(currentDay < 10 && currentMonth > 9){
+    data = "0" + String(currentDay) + "/" + String(currentMonth);
+  }
+  else
+    data=String(currentDay) + "/" + String(currentMonth);   //
 
   if(timeElapsed > interval){                             //
     flag+=1;                                              //
+    temperature = dht.readTemperature();                  //Realiza a leitura da temperatura
     timeElapsed = 0;                                      //
   }                                                       //Controla o tempo de exibição de cada etapa
                                                           //
@@ -165,34 +199,36 @@ void loop() {
   }                                                       //
 
   if(flag == 0){                                          //
-     Serial.println(hora);                                //
+     Serial.println(hour);                                //
      Disp.clear();                                        //Exibe a hora no display
-     Disp.drawText(9, 5, hora);                           //
+     Disp.drawText(9, 5, hour);                           //
   }                                                       //
 
-  if(flag == 1){                                          //
+  else if(flag == 1){                                     //
      Serial.println(standardText[0]);                     //Exibe a mensagem padrão no display                          
      Scrolling_standardText(5, 50);                       //
   }                                                       //
 
-  if(flag == 2){                                          //
+  else if(flag == 2){                                     //
      Serial.println(data);                                //
      Disp.clear();                                        //Exibe a data no display
      Disp.drawText(18, 5, data);                          //
   }                                                       //
 
-   if(flag == 3){                                         //
-     Serial.print(temperatura);                           //
+   else if(flag == 3){                                    //
+     Serial.print(temperature);                           //
      Serial.println(" *C");                               //
      Disp.clear();                                        //Exibe a temperatura no display
-     Disp.drawText(22, 5, (String)temperatura);           //
+     Disp.drawText(22, 5, (String)temperature);           //
      Disp.drawText(33, 5 , "*C");                         //
   }                                                       //
 
-  if(flag == 4){                                          //
-     Serial.println(Text[0]);                             //Exibe a mensagem no display                          
-     Scrolling_Text(5, 50);                               //
+  else if(flag == 4 && Disp.textWidth(Text[0])>0){        //
+     Serial.println(Text[0]);                             //                          
+     Scrolling_Text(5, 50);                               //Exibe a mensagem no display
   }                                                       //
+  else                                                    //
+    flag = 0;                                             //
 }
 
 //===============================================================================
@@ -231,7 +267,7 @@ void Scrolling_standardText(int y, uint8_t scrolling_speed) {
       x = 0;
       return;
     }
-    Disp.drawText(width - x, y, standardText[0],1);
+    Disp.drawText(width - x, y, standardText[0]);
   }  
 }
 
