@@ -58,8 +58,8 @@ DHT dht(DHTPIN, DHTTYPE);
 /*-------------- VÁRIAVEIS PARA O CONTROLE DO PAINEL ----------------*/
 int     temperature;
 String  hour;
-String  data;
-int     flag = 0;
+String  data, dataAtual;
+int     flag = 0, flag1 = 0;
 long    interval = 7000;
 elapsedMillis timeElapsed;
 
@@ -68,7 +68,7 @@ elapsedMillis timeElapsed;
 char   *standardText[] = {"COORDENACAO DE ELETRONICA"};
 char   *Text[100] = {"Eletronica"};
 String  Incoming_Text = "";
-char   *date[20]{""};
+char   *date[20] = {""};
 String  Incoming_date = "";
 
 //===============================================================================
@@ -95,23 +95,24 @@ void Process_Incoming_Text() {
   int str_len = Incoming_Text.length() + 1;
   char char_array[str_len];
   Incoming_Text.toCharArray(char_array, str_len);
-  //Text[0] = {""};
   strcpy(Text[0], char_array);
+  //Text[0] = {""};
   standardText[0] = {"COORDENACAO DE ELETRONICA"};
   Incoming_Text = "";
 }
 
 //===============================================================================
 /*-------------- FUNÇÃO PARA RECEBER A DATA DA PÁGINA HTML ----------------*/
-void handle_Incoming_date() {
+void handle_Incoming_Date() {
   Incoming_date = server.arg("DataContents");
+  //Serial.println(Incoming_date);
   server.send(200, "text/plane", "");
-  Process_Incoming_date();
+  Process_Incoming_Date();
 }
 
 //===============================================================================
 /*-------------- FUNÇÃO PARA ATRIBUIR A DATA PARA OUTRA VARIAVEL ----------------*/
-void Process_Incoming_date() {
+void Process_Incoming_Date() {
   delay(500);
   Serial.println("Incoming date : ");
   Serial.println(Incoming_date);
@@ -152,6 +153,7 @@ void setup() {
 
   server.on("/", handleRoot);                             //Chama a função handleRoot
   server.on("/setText", handle_Incoming_Text);            //Chama a função handle_Incoming_Text
+  server.on("/setData", handle_Incoming_Date);            //Chama a função handle_Incoming_Date
 
   Serial.print("IP para se conectar ao NodeMCU: ");
   Serial.print("http://");
@@ -171,25 +173,35 @@ void loop() {
   timeClient.update();                                    //Atualiza o servidor NTP
 
   hour = timeClient.getFormattedTime();                   //Realiza a leitura da hora
+  int hora = timeClient.getHours();
+  int minutos = timeClient.getMinutes();
   
   time_t epochTime = timeClient.getEpochTime();           //
   struct tm *ptm = gmtime ((time_t *)&epochTime);         //
   int currentDay = ptm->tm_mday;                          //Realiza a leitura da data
-  int currentMonth = ptm->tm_mon+1;                       //
+  int currentMonth = ptm->tm_mon+1;
+  int currentYear = ptm->tm_year+1900;//
   if(currentDay < 10 && currentMonth < 10){
-  data = "0" + String(currentDay) + "/" + "0" + String(currentMonth);
+    data = "0" + String(currentDay) + "/" + "0" + String(currentMonth);
+    dataAtual = String(currentYear) + "-" + "0" + String(currentMonth) + "-" + "0" + String(currentDay) + "T" + String(hora) + ":" + String(minutos);
   }
   else if(currentDay > 9 && currentMonth < 10){
     data = String(currentDay) + "/" + "0" + String(currentMonth);
+    dataAtual = String(currentYear) + "-" + "0" + String(currentMonth) + "-" + String(currentDay) + "T" + String(hora) + ":" + String(minutos);
   }
   else if(currentDay < 10 && currentMonth > 9){
     data = "0" + String(currentDay) + "/" + String(currentMonth);
+    dataAtual = String(currentYear) + "-" + String(currentMonth) + "-" + "0" + String(currentDay) + "T" + String(hora) + ":" + String(minutos);
   }
   else
-    data=String(currentDay) + "/" + String(currentMonth);   //
+    data=String(currentDay) + "/" + String(currentMonth);
+    dataAtual = String(currentYear) + "-" + String(currentMonth) + "-" + String(currentDay) + "T" + String(hora) + ":" + String(minutos);
 
   if(timeElapsed > interval){                             //
-    flag+=1;                                              //
+    flag+=1;
+    Serial.println("Data Atual:");
+    Serial.println(dataAtual);
+    Serial.println();//
     temperature = dht.readTemperature();                  //Realiza a leitura da temperatura
     timeElapsed = 0;                                      //
   }                                                       //Controla o tempo de exibição de cada etapa
@@ -223,10 +235,9 @@ void loop() {
      Disp.drawText(33, 5 , "*C");                         //
   }                                                       //
 
-  else if(flag == 4 && Disp.textWidth(Text[0])>0){        //
-     Serial.println(Text[0]);                             //                          
-     Scrolling_Text(5, 50);                               //Exibe a mensagem no display
-  }                                                       //
+  else if(flag == 4 && Disp.textWidth(Text[0])>0){        //  
+      Scrolling_Text(5, 50);                               //Exibe a mensagem no display
+  }                                           //
   else                                                    //
     flag = 0;                                             //
 }
