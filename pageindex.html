@@ -1,3 +1,4 @@
+const char MAIN_page[] PROGMEM = R"=====(
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -19,26 +20,24 @@
             <form id="msgForm" class="login-form hidden">
                 <h4>Message page</h4>
                 <textarea id="msg" placeholder="message"></textarea>
-                <input type="datetime" id="date" required>
-                <button>Send</button>
+                <button type="button" class="buttonSend" onclick="sendData()">Send</button>
             </form>
         </div>
     </div>
     <script>
-        const username = "arthur";
-        const password = "tcc";
-
+        const username = "eletronica";
+        const password = "cimol";
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             if (document.getElementById('password').value === password && 
                 document.getElementById('username').value === username) {
-                if (window.confirm('Bem-vindo Arthur')) {
+                if (window.confirm("Bem-vindo")) {
                     hideLoginForm();
                 } else {
                     window.location.reload();
                 }
             } else {
-                alert('Deu ruim');
+                alert("Credencias Incorretas!");
             }
         });
         document.getElementById('msgForm').addEventListener('submit', function () {
@@ -54,10 +53,6 @@
             var xhttp = new XMLHttpRequest();
             xhttp.open("GET", "setText?TextContents=" + msg, true);
             xhttp.send();
-            var date = document.getElementById("date").value;
-            var http = new XMLHttpRequest();
-            http.open("GET", "setData?DataContents=" + date, true);
-            http.send();
             alert("Mensagem enviada!");            
         }
     </script>
