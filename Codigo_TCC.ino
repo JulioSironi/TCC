@@ -58,9 +58,9 @@ DHT dht(DHTPIN, DHTTYPE);
 /*-------------- VÁRIAVEIS PARA O CONTROLE DO PAINEL ----------------*/
 int     temperature;
 String  hour;
-String  data, dataAtual;
+String  data;
 int     flag = 0, flag1 = 0;
-long    interval = 7000;
+long    interval = 15000;
 elapsedMillis timeElapsed;
 
 //-------------------------------------------------------------------------------
@@ -68,8 +68,6 @@ elapsedMillis timeElapsed;
 char   *standardText[] = {"COORDENACAO DE ELETRONICA"};
 char   *Text[100] = {"Eletronica"};
 String  Incoming_Text = "";
-char   *date[20] = {""};
-String  Incoming_date = "";
 
 //===============================================================================
 /*-------------- FUNÇÃO PARA INICIAR A PÁGINA HTML ----------------*/
@@ -102,30 +100,6 @@ void Process_Incoming_Text() {
 }
 
 //===============================================================================
-/*-------------- FUNÇÃO PARA RECEBER A DATA DA PÁGINA HTML ----------------*/
-void handle_Incoming_Date() {
-  Incoming_date = server.arg("DataContents");
-  //Serial.println(Incoming_date);
-  server.send(200, "text/plane", "");
-  Process_Incoming_Date();
-}
-
-//===============================================================================
-/*-------------- FUNÇÃO PARA ATRIBUIR A DATA PARA OUTRA VARIAVEL ----------------*/
-void Process_Incoming_Date() {
-  delay(500);
-  Serial.println("Incoming date : ");
-  Serial.println(Incoming_date);
-  Serial.println();
-  int str_len = Incoming_date.length() + 1;
-  char char_array[str_len];
-  Incoming_date.toCharArray(char_array, str_len);
-  //date[0] = {""};
-  strcpy(date[0], char_array);
-  Incoming_date = "";
-}
-
-//===============================================================================
 void setup() {
   Serial.begin(115200);                                   //Inicia a serial
   delay(100);
@@ -153,7 +127,6 @@ void setup() {
 
   server.on("/", handleRoot);                             //Chama a função handleRoot
   server.on("/setText", handle_Incoming_Text);            //Chama a função handle_Incoming_Text
-  server.on("/setData", handle_Incoming_Date);            //Chama a função handle_Incoming_Date
 
   Serial.print("IP para se conectar ao NodeMCU: ");
   Serial.print("http://");
@@ -173,8 +146,6 @@ void loop() {
   timeClient.update();                                    //Atualiza o servidor NTP
 
   hour = timeClient.getFormattedTime();                   //Realiza a leitura da hora
-  int hora = timeClient.getHours();
-  int minutos = timeClient.getMinutes();
   
   time_t epochTime = timeClient.getEpochTime();           //
   struct tm *ptm = gmtime ((time_t *)&epochTime);         //
@@ -182,28 +153,28 @@ void loop() {
   int currentMonth = ptm->tm_mon+1;
   int currentYear = ptm->tm_year+1900;//
   if(currentDay < 10 && currentMonth < 10){
-    data = "0" + String(currentDay) + "/" + "0" + String(currentMonth);
-    dataAtual = String(currentYear) + "-" + "0" + String(currentMonth) + "-" + "0" + String(currentDay) + "T" + String(hora) + ":" + String(minutos);
+    data = "0" + String(currentDay) + "/" + "0" + String(currentMonth) + "/" + String(currentYear);
   }
   else if(currentDay > 9 && currentMonth < 10){
-    data = String(currentDay) + "/" + "0" + String(currentMonth);
-    dataAtual = String(currentYear) + "-" + "0" + String(currentMonth) + "-" + String(currentDay) + "T" + String(hora) + ":" + String(minutos);
+    data = String(currentDay) + "/" + "0" + String(currentMonth) + "/" + String(currentYear);
   }
   else if(currentDay < 10 && currentMonth > 9){
-    data = "0" + String(currentDay) + "/" + String(currentMonth);
-    dataAtual = String(currentYear) + "-" + String(currentMonth) + "-" + "0" + String(currentDay) + "T" + String(hora) + ":" + String(minutos);
+    data = "0" + String(currentDay) + "/" + String(currentMonth) + "/" + String(currentYear);
   }
-  else
-    data=String(currentDay) + "/" + String(currentMonth);
-    dataAtual = String(currentYear) + "-" + String(currentMonth) + "-" + String(currentDay) + "T" + String(hora) + ":" + String(minutos);
+  else{
+    data=String(currentDay) + "/" + String(currentMonth) + "/" + String(currentYear);
+  }
 
   if(timeElapsed > interval){                             //
     flag+=1;
-    Serial.println("Data Atual:");
-    Serial.println(dataAtual);
-    Serial.println();//
+    Disp.clear();
     temperature = dht.readTemperature();                  //Realiza a leitura da temperatura
     timeElapsed = 0;                                      //
+    if(flag == 4){
+      interval = Disp.textWidth(Text[0])*350;
+    }
+    else
+      interval = 15000;
   }                                                       //Controla o tempo de exibição de cada etapa
                                                           //
   if (flag > 4){                                          // 
@@ -211,25 +182,25 @@ void loop() {
   }                                                       //
 
   if(flag == 0){                                          //
-     Serial.println(hour);                                //
+     //Serial.println(hour);                              //
      Disp.clear();                                        //Exibe a hora no display
      Disp.drawText(9, 5, hour);                           //
   }                                                       //
 
   else if(flag == 1){                                     //
-     Serial.println(standardText[0]);                     //Exibe a mensagem padrão no display                          
+    // Serial.println(standardText[0]);                     //Exibe a mensagem padrão no display                          
      Scrolling_standardText(5, 50);                       //
   }                                                       //
 
   else if(flag == 2){                                     //
-     Serial.println(data);                                //
+    // Serial.println(data);                                //
      Disp.clear();                                        //Exibe a data no display
-     Disp.drawText(18, 5, data);                          //
+     Disp.drawText(2, 5, data);                          //
   }                                                       //
 
    else if(flag == 3){                                    //
-     Serial.print(temperature);                           //
-     Serial.println(" *C");                               //
+     //Serial.print(temperature);                           //
+     //Serial.println(" *C");                               //
      Disp.clear();                                        //Exibe a temperatura no display
      Disp.drawText(22, 5, (String)temperature);           //
      Disp.drawText(33, 5 , "*C");                         //

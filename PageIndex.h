@@ -1,55 +1,195 @@
 const char MAIN_page[] PROGMEM = R"=====(
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
     <title>SER</title>
 </head>
 <body>
-    <h1>
-        <p>Escreva sua mensagem</p>
-    </h1>
-    <form>
-        <textarea name="message"cols="30" rows="10" id="recado"></textarea>
-        <br>
-        <p>Senha:</p>
-        <input type="password" id="senha">
-        <br><br><br>
-        <div> 
-            <input type="datetime" id="data">
-            
+    <div class="login-page">
+        <div class="form">
+            <form id="loginForm" class="login-form">
+                <h4>Login page</h4>
+                <input id="username" type="text" placeholder="username" required />
+                <input id="password" type="password" placeholder="password" required />
+                <button>login</button>
+            </form>
+            <form id="msgForm" class="login-form hidden">
+                <h4>Message page</h4>
+                <textarea id="msg" placeholder="message"></textarea>
+                <button type="button" class="buttonSend" onclick="sendData()">Send</button>
+            </form>
         </div>
-        <br><br><br>
-        <div>
-            <button type="button" class="buttonSend" onclick="sendData()">Enviar Mensagem</button>
-        </div> 
-        <br><br><br><br>
-        <input type="reset">
-    </form>
+    </div>
     <script>
+        const username = "eletronica";
+        const password = "cimol";
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (document.getElementById('password').value === password && 
+                document.getElementById('username').value === username) {
+                if (window.confirm("Bem-vindo")) {
+                    hideLoginForm();
+                } else {
+                    window.location.reload();
+                }
+            } else {
+                alert("Credencias Incorretas!");
+            }
+        });
+        document.getElementById('msgForm').addEventListener('submit', function () {
+            e.preventDefault();
+            sendData();
+        });
+        function hideLoginForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('msgForm').classList.remove('hidden');
+        }
         function sendData() {
-            var senha = document.getElementById("senha").value;
-            if(senha === "senha" )
-            {
-                var Text = document.getElementById("recado").value;
-                var xhttp = new XMLHttpRequest();
-                xhttp.open("GET", "setText?TextContents="+Text, true);
-                xhttp.send(); 
-                var data = document.getElementById("data").value
-                var http = new XMLHttpRequest();
-                http.open("GET", "setData?DataContents="+data, true);
-                http.send();
-                alert ("Mensagem enviada!");
-            }
-            else{
-                alert("Senha Incorreta!");
-            }
-            
+            var msg = document.getElementById("msg").value;
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("GET", "setText?TextContents=" + msg, true);
+            xhttp.send();
+            alert("Mensagem enviada!");            
         }
     </script>
+    <style>
+      .login-page {
+          width: 360px;
+          padding: 8% 0 0;
+          margin: auto;
+      }
+      
+      .hidden {
+          display: none;
+      }
+      
+      .form {
+          position: relative;
+          z-index: 1;
+          background: #FFFFFF;
+          max-width: 360px;
+          margin: 0 auto 100px;
+          padding: 45px;
+          text-align: center;
+          box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+      }
+      
+      .form input {
+          font-family: "Roboto", sans-serif;
+          outline: 0;
+          background: #f2f2f2;
+          width: 100%;
+          border: 0;
+          margin: 0 0 15px;
+          padding: 15px;
+          box-sizing: border-box;
+          font-size: 14px;
+      }
+      
+      .form textarea {
+          font-family: "Roboto", sans-serif;
+          outline: 0;
+          background: #f2f2f2;
+          width: 100%;
+          border: 0;
+          margin: 0 0 15px;
+          padding: 15px;
+          box-sizing: border-box;
+          font-size: 14px;
+      }
+      
+      .form button {
+          font-family: "Roboto", sans-serif;
+          text-transform: uppercase;
+          outline: 0;
+          background: #0017e9;
+          width: 100%;
+          border: 0;
+          padding: 15px;
+          color: #FFFFFF;
+          font-size: 14px;
+          -webkit-transition: all 0.3 ease;
+          transition: all 0.3 ease;
+          cursor: pointer;
+      }
+      
+      .form button:hover,
+      .form button:active,
+      .form button:focus {
+          background: #0017e9;
+      }
+      
+      .form .message {
+          margin: 15px 0 0;
+          color: #b3b3b3;
+          font-size: 12px;
+      }
+      
+      .form .message a {
+          color: #4CAF50;
+          text-decoration: none;
+      }
+      
+      .form .register-form {
+          display: none;
+      }
+      
+      .container {
+          position: relative;
+          z-index: 1;
+          max-width: 300px;
+          margin: 0 auto;
+      }
+      
+      .container:before,
+      .container:after {
+          content: "";
+          display: block;
+          clear: both;
+      }
+      
+      .container .info {
+          margin: 50px auto;
+          text-align: center;
+      }
+      
+      .container .info h1 {
+          margin: 0 0 15px;
+          padding: 0;
+          font-size: 36px;
+          font-weight: 300;
+          color: #1a1a1a;
+      }
+      
+      .container .info span {
+          color: #4d4d4d;
+          font-size: 12px;
+      }
+      
+      .container .info span a {
+          color: #000000;
+          text-decoration: none;
+      }
+      
+      .container .info span .fa {
+          color: #EF3B3A;
+      }
+      
+      body {
+          background: #0059ff;
+          /* fallback for old browsers */
+          background: rgb(0, 0, 139);
+          background: linear-gradient(90deg, rgba(0, 0, 139, 1) 0%, rgba(25, 25, 112, 1) 50%);
+          font-family: "Roboto", sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+      }
+    </style>
 </body>
 </html>
 )=====";
